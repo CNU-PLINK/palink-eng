@@ -84,28 +84,27 @@ class Messages(BaseModel):
     class Config:
         from_attributes = True
 
-# AIResponseBase: 기본 Pydantic 스키마
 class AIResponseBase(BaseModel):
     text: str
-    feeling: Optional[str] = None  # 필수 값이 아니므로 Optional로 설정
+    feeling: Optional[str] = None
     affinity_score: int
     rejection_score: List[int]  # List of integer values
     rejection_content: List[str]  # List of string values
     final_rejection_score: int
     final_affinity_score: int
 
-# AIResponseCreate: 데이터를 생성할 때 사용하는 스키마
+
 class AIResponseCreate(AIResponseBase):
-    feeling: Optional[str] = None  # 필수 값이 아니므로 Optional로 설정
-    rejection_score: List[int]  # List of integer values
-    rejection_content: List[str]  # List of string values
-    final_rejection_score: Optional[int]  # Optional로 설정
-    final_affinity_score: Optional[int]  # Optional로 설정
+    feeling: Optional[str] = None
+    rejection_score: List[int]
+    rejection_content: List[str]
+    final_rejection_score: Optional[int]
+    final_affinity_score: Optional[int]
 
     class Config:
-        orm_mode = True  # SQLAlchemy 모델과의 호환성 설정
+        orm_mode = True
 
-# AIResponse: 데이터베이스 조회 시 사용하는 스키마
+
 class AIResponse(AIResponseBase):
     aiMessage: int
 
@@ -113,7 +112,7 @@ class AIResponse(AIResponseBase):
         orm_mode = True
 
 class MessageCreate(MessageBase):
-    ai_response: Optional[AIResponseCreate] = None  # AI 응답은 선택 사항
+    ai_response: Optional[AIResponseCreate] = None
 
 class TipBase(BaseModel):
     messageId: int

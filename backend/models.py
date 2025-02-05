@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Enum, JSON
 from sqlalchemy.orm import relationship
 from database import Base
-import enum
 
 class User(Base):
     __tablename__ = "user"
@@ -25,7 +24,7 @@ class Conversation(Base):
     userId = Column(Integer, ForeignKey("user.userId"))
     characterId = Column(Integer, ForeignKey("aicharacter.characterId"))
 
-    # Message와의 1:N 관계 (하나의 대화창에 여러 개의 메시지가 포함)
+    # 1:N relationship with Message (One conversation window contains multiple messages)
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
 
 class Message(Base):
@@ -36,10 +35,10 @@ class Message(Base):
     messageText = Column(Text, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
-    # Conversation과의 N:1 관계 (하나의 메시지는 하나의 대화에 속함)
+    # N:1 relationship with Conversation (Each message belongs to a single conversation)
     conversation = relationship("Conversation", back_populates="messages")
 
-    # AIResponse와의 1:1 관계, foreign_keys 명시
+    # 1:1 relationship with AIResponse, specifying foreign keys
     ai_response = relationship("AIResponse", back_populates="message", uselist=False,
                                foreign_keys="[AIResponse.aiMessage]")
 
@@ -50,7 +49,7 @@ class AIResponse(Base):
     text = Column(Text, nullable=False)
     feeling = Column(Text)
     affinity_score = Column(Integer)
-    rejection_score = Column(JSON)  # JSON 형태로 리스트 값 저장 가능
+    rejection_score = Column(JSON)
     rejection_content = Column(JSON)
     userMessage = Column(Text)
     final_rejection_score = Column(Integer)

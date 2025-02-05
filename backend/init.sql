@@ -1,136 +1,195 @@
--- UTF-8 인코딩 설정
+-- UTF-8 Encoding Settings
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 SET collation_connection = 'utf8mb4_unicode_ci';
 
 
--- 데이터베이스 생성
+-- Database Creation
 CREATE DATABASE IF NOT EXISTS palink;
 USE palink;
 
--- 기본 설정
+-- Basic Settings
 SET FOREIGN_KEY_CHECKS=0;
 
--- ✅ user 테이블 생성
+-- ✅ Create 'user' table
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
-  `user_id` VARCHAR(255) NOT NULL PRIMARY KEY,
+  `userId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `accountId` VARCHAR(255),
   `name` VARCHAR(255),
   `password` VARCHAR(255),
-  `age` INT,
-  `personality_type` VARCHAR(255)
+  `age` INT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ character_data (기존 aicharacter 테이블) 생성
-DROP TABLE IF EXISTS `character_data`;
-CREATE TABLE `character_data` (
-  `character_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `ai_name` VARCHAR(255),
+-- ✅ Create 'aicharacter' table
+DROP TABLE IF EXISTS `aicharacter`;
+CREATE TABLE `aicharacter` (
+  `characterId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `aiName` VARCHAR(255),
   `description` TEXT,
-  `difficulty_level` INT
+  `difficultyLevel` INT
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ conversation 테이블 생성
+-- ✅ Create 'conversation' table
 DROP TABLE IF EXISTS `conversation`;
 CREATE TABLE `conversation` (
-  `conversation_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `conversationId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `day` DATETIME,
-  `user_id` VARCHAR(255),
-  `character_id` INT,
-  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`),
-  FOREIGN KEY (`character_id`) REFERENCES `character_data`(`character_id`)
+  `userId` INT,
+  `characterId` INT,
+  FOREIGN KEY (`userId`) REFERENCES `user`(`userId`),
+  FOREIGN KEY (`characterId`) REFERENCES `aicharacter`(`characterId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ message 테이블 생성
+-- ✅ Create 'message' table
 DROP TABLE IF EXISTS `message`;
 CREATE TABLE `message` (
-  `message_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `conversation_id` INT,
+  `messageId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `conversationId` INT,
   `sender` BOOLEAN,
-  `message_text` TEXT,
+  `messageText` TEXT,
   `timestamp` DATETIME,
-  FOREIGN KEY (`conversation_id`) REFERENCES `conversation`(`conversation_id`)
+  FOREIGN KEY (`conversationId`) REFERENCES `conversation`(`conversationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ tip 테이블 생성
+-- ✅ Create 'tip' table
 DROP TABLE IF EXISTS `tip`;
 CREATE TABLE `tip` (
-  `tip_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `tip_text` TEXT,
-  `message_id` INT,
-  FOREIGN KEY (`message_id`) REFERENCES `message`(`message_id`)
+  `tipId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `tipText` TEXT,
+  `messageId` INT,
+  FOREIGN KEY (`messageId`) REFERENCES `message`(`messageId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ feedback 테이블 생성
+-- ✅ Create 'feedback' table
 DROP TABLE IF EXISTS `feedback`;
 CREATE TABLE `feedback` (
-  `feedback_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `feedback_text` TEXT,
-  `liking_level` INT,
+  `feedbackId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `feedbackText` TEXT,
+  `finalLikingLevel` INT,
+  `totalRejectionScore` INT,
   `day` DATETIME,
-  `conversation_id` INT,
-  FOREIGN KEY (`conversation_id`) REFERENCES `conversation`(`conversation_id`)
+  `conversationId` INT,
+  FOREIGN KEY (`conversationId`) REFERENCES `conversation`(`conversationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ collection 테이블 생성
-DROP TABLE IF EXISTS `collection`;
-CREATE TABLE `collection` (
-  `collection_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` VARCHAR(255),
-  `character_id` INT,
-  `added_date` DATETIME,
-  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`),
-  FOREIGN KEY (`character_id`) REFERENCES `character_data`(`character_id`)
+-- ✅ Create 'collection' table
+DROP TABLE IF EXISTS `usercollection`;
+CREATE TABLE `usercollection` (
+  `userId` INT,
+  `characterId` INT,
+  `addedDate` DATETIME,
+  PRIMARY KEY (`userId`, `characterId`),
+  FOREIGN KEY (`userId`) REFERENCES `user`(`userId`),
+  FOREIGN KEY (`characterId`) REFERENCES `aicharacter`(`characterId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ emotion 테이블 생성
+
+-- ✅ Create 'emotion' table
 DROP TABLE IF EXISTS `emotion`;
 CREATE TABLE `emotion` (
-  `emotion_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `emotion_type` VARCHAR(255),
-  `vibration_pattern` VARCHAR(255),
-  `background_color` VARCHAR(255)
+  `emotionId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `emotionType` VARCHAR(255),
+  `vibrationPattern` VARCHAR(255),
+  `backgroundColor` VARCHAR(255),
+  `messageId` INT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ mindset 테이블 생성
+-- ✅ Create 'mindset' table
 CREATE TABLE `mindset` (
-  `mindset_id` int NOT NULL AUTO_INCREMENT,
-  `mindset_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`mindset_id`)
+  `mindsetId` int NOT NULL AUTO_INCREMENT,
+  `mindsetText` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`mindsetId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ✅ liking 테이블 생성
+-- ✅ Create 'liking' table
 DROP TABLE IF EXISTS `liking`;
 CREATE TABLE `liking` (
-  `liking_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` VARCHAR(255),
-  `character_id` INT,
-  `liking_level` INT,
-  `message_id` INT,
-  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`),
-  FOREIGN KEY (`character_id`) REFERENCES `character_data`(`character_id`),
-  FOREIGN KEY (`message_id`) REFERENCES `message`(`message_id`)
+  `likingId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `userId` INT,
+  `characterId` INT,
+  `likingLevel` INT,
+  `messageId` INT,
+  FOREIGN KEY (`userId`) REFERENCES `user`(`userId`),
+  FOREIGN KEY (`characterId`) REFERENCES `aicharacter`(`characterId`),
+  FOREIGN KEY (`messageId`) REFERENCES `message`(`messageId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ rejection 테이블 생성
+-- ✅ Create 'rejection' table
 DROP TABLE IF EXISTS `rejection`;
 CREATE TABLE `rejection` (
-  `rejection_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` VARCHAR(255),
-  `character_id` INT,
-  `rejection_level` INT,
-  `message_id` INT,
-  FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`),
-  FOREIGN KEY (`character_id`) REFERENCES `character_data`(`character_id`),
-  FOREIGN KEY (`message_id`) REFERENCES `message`(`message_id`)
+  `rejectionId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `userId` INT,
+  `characterId` INT,
+  `rejectionLevel` INT,
+  `messageId` INT,
+  `rejectionText` TEXT,
+  FOREIGN KEY (`userId`) REFERENCES `user`(`userId`),
+  FOREIGN KEY (`characterId`) REFERENCES `aicharacter`(`characterId`),
+  FOREIGN KEY (`messageId`) REFERENCES `message`(`messageId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ✅ 초기 데이터 삽입
-INSERT INTO mindset (mindset_id, mindset_text) VALUES
-(1,'모든 사람을 만족시키려 하면 자신을 잃게 됩니다. 스스로를 우선시하는 것이 중요합니다. 이는 우리의 정신적, 감정적 건강을 지키는 데 필요합니다.'),(2,'사람들 앞에서 말하는 것이 두렵다면, 모두가 처음에는 떨린다는 것을 기억하세요. 반복적인 연습과 작은 성공을 통해 자신감을 키울 수 있습니다.'),(3,'자신감을 키우기 위해서는 자신의 강점을 찾고 그것을 개발하는 것이 중요합니다. 이는 자기 효능감을 높이고 더 나은 자신을 만드는 데 도움이 됩니다.'),(4,'실수는 성장의 과정 중 하나입니다. 실수를 통해 배우고 개선할 수 있습니다. 이를 받아들이면 더 나은 관계를 형성할 수 있습니다.'),(5,'자신을 돌보는 것은 매우 중요합니다. 건강한 마음과 몸이 있어야 다른 사람들과의 관계도 건강하게 유지할 수 있습니다.'),(6,'긍정적인 자기 대화는 자신감을 높이고, 어려운 상황에서도 긍정적인 태도를 유지하는 데 도움이 됩니다. 이는 대인관계에서도 긍정적인 영향을 미칩니다.'),(7,'자신의 생각과 감정을 표현하는 것은 매우 중요합니다. 타인의 반응을 두려워하지 말고 솔직하게 자신을 표현하는 것이 필요합니다. 이는 진정한 나를 보여주고 관계를 깊게 만드는 데 도움이 됩니다.'),(8,'타인의 시선과 평가가 나의 가치를 결정하지 않습니다. 나 자신의 가치와 자존감을 스스로 인정하는 것이 중요합니다. 이는 건강한 자아상을 유지하는 데 도움이 됩니다.'),(9,'과거에 얽매여 현재의 불행한 관계를 유지하는 것은 도움이 되지 않습니다. 과거를 인정하고, 현재와 미래를 위해 필요한 결정을 내리는 것이 중요합니다.'),(10,'내가 편안해야 상대방도 편안해집니다. 나 자신을 \"괜찮다\"고 인정하는 것이 중요합니다.'),(11,'내가 편안한 마음을 가지면, 그 에너지가 상대방에게도 전달됩니다. 이는 자연스럽고 편안한 관계를 형성하는 데 도움이 됩니다.'),(12,'타인의 생각과 의견은 그들의 문제이며, 내가 통제할 수 없는 부분입니다. 나 자신의 감정과 생각에 집중하는 것이 더 중요합니다. 이는 나의 정신적 건강을 지키는 데 도움이 됩니다.'),(13,'타인의 판단은 일시적이고 변할 수 있습니다. 이에 너무 집착하지 말고 나 자신의 길을 가는 것이 중요합니다. 이는 지속적인 자아 발전과 행복을 추구하는 데 도움이 됩니다.'),(14,'모든 사람에게 좋은 인상을 주려고 노력하면 지치게 됩니다. 자신에게 중요한 사람들과의 관계에 집중하는 것이 더 중요합니다. 이는 나의 에너지를 효율적으로 사용하는 데 도움이 됩니다.'),(15,'나의 삶의 주인은 나 자신입니다. 타인의 의견에 휘둘리지 않고, 나의 결정을 스스로 내리는 것이 중요합니다. 이는 진정한 자유와 자아 존중을 이루는 데 도움이 됩니다.'),(16,'우리는 자신의 시간과 에너지를 선택할 권리가 있습니다. 거절은 자신의 필요와 우선순위를 지키기 위한 정당한 선택입니다. 이를 통해 삶을 더 주도적으로 이끌 수 있습니다.'),(17,'갈등 상황에서 상대방을 비난하기보다는 함께 해결책을 찾는 것이 중요합니다. 이는 문제를 더 효율적으로 해결하고 관계를 강화하는 데 도움이 됩니다.'),(18,'모든 요청에 \'예\'라고 답하는 것은 나의 의지와 필요를 무시하게 만듭니다. 나의 한계를 알고 적절히 거절하는 것이 중요합니다. 이는 나의 자존감을 지키고 대인관계를 건강하게 유지하는 데 도움이 됩니다.'),(19,'올바르게 거절하는 것은 관계를 망치지 않습니다. 오히려, 솔직한 대화는 관계를 더욱 깊게 만들 수 있습니다. 서로의 한계를 존중하는 것이 중요합니다.'),(20,'거절할 줄 아는 것은 자신감의 표현입니다. 자신의 한계를 알고 그것을 표현하는 것이 진정한 용기입니다. 이는 타인에게 나의 경계를 명확히 알려주는 데 도움이 됩니다.'),(21,'거절하는 것은 연습을 통해 더욱 자연스러워질 수 있습니다. 작은 일에서부터 거절을 연습해보면, 점점 더 큰 일에서도 자연스럽게 거절할 수 있습니다. 이는 나의 의사결정 능력을 강화합니다.'),(22,'정당한 이유로 거절했을 때 미안해하지 말자. 나의 한계를 지키는 것은 당연한 일입니다. 과도한 죄책감은 나를 힘들게 할 뿐입니다. 거절은 내가 나 자신을 존중하는 한 방법입니다.'),(23,'거절할 때, 가능한 대안을 제시하면 상대방도 거절을 더 쉽게 받아들일 수 있습니다. 이는 상대방에게 존중받고 있다는 느낌을 주고 관계를 긍정적으로 유지하는 데 도움이 됩니다.'),(24,'자신의 감정과 필요를 우선시하는 것은 건강한 자아존중감을 형성하는 데 중요합니다. 다른 사람의 기대에 맞추기 위해 자신을 희생하는 것은 장기적으로 건강하지 않습니다.'),(25,'대부분의 사람들은 거절에 대해 이해할 수 있습니다. 너무 걱정하지 말고 솔직하게 말하는 것이 좋습니다. 이는 오해를 줄이고 관계를 긍정적으로 유지하는 데 도움이 됩니다.'),(26,'거절은 나의 기준과 경계를 명확히 하는 방법입니다. 나의 가치와 원칙을 지키기 위해 거절하는 것이 필요합니다. 이는 타인에게 나의 경계를 알리는 데 중요합니다.'),(27,'친구와의 관계에서 서로의 입장을 이해하려고 노력하면 갈등을 줄이고 더 깊은 유대감을 형성할 수 있습니다. 이는 상대방의 감정을 존중하고, 공감하는 능력을 키우는 데 도움이 됩니다.'),(28,'감정을 솔직하게 표현하면 상대방이 나의 상황과 감정을 더 잘 이해할 수 있습니다. 이는 오해를 줄이고, 신뢰를 쌓으며, 건강한 의사소통을 가능하게 합니다.'),(29,'서로 다른 관점을 존중하면 더 넓은 시각을 가지게 됩니다. 이는 서로의 차이를 이해하고, 갈등을 줄이며, 풍부한 대화를 나누는 데 도움이 됩니다.'),(30,'긍정적인 피드백은 상대방의 자존감을 높이고, 더 나은 행동을 유도하는 데 효과적입니다. 이는 건강한 대인관계를 유지하고, 서로의 성장을 지원하는 데 중요합니다.'),(31,'억지로 하는 배려는 나와 상대방 모두에게 부담이 됩니다. 자연스럽게 나오는 배려가 진정한 배려이며, 이는 서로를 더 편안하게 하고 관계를 긍정적으로 유지하는 데 도움이 됩니다.'),(32,'타산적인 배려는 상대방을 조작하려는 의도가 담겨 있어 진정한 배려가 아닙니다. 이는 오히려 신뢰를 손상시킬 수 있습니다. 순수한 마음에서 우러나오는 배려가 중요합니다.'),(33,'사람마다 생각과 느낌이 다르다는 사실을 인정하면 상대방을 더 잘 이해할 수 있습니다. 이는 상대방의 감정을 존중하고, 불필요한 갈등을 피하는 데 도움이 됩니다.'),(34,'상대방의 상황을 충분히 이해하지 못한 상태에서 결론을 내리는 것은 잘못된 판단으로 이어질 수 있습니다. 이는 오해를 줄이고, 상대방을 더 잘 이해하려는 노력을 통해 건강한 관계를 유지하는 데 중요합니다.'),(35,'조언은 때로는 상대방을 바꾸려는 시도로 받아들여질 수 있습니다. 반면, 공감은 상대방의 감정을 이해하고 존중하는 데 초점을 맞춥니다. 이는 서로의 감정을 더 깊이 이해하고 신뢰를 쌓는 데 도움이 됩니다.'),(36,'상호 존중이 없는 관계는 나에게 해로울 뿐입니다. 존중과 이해가 기반이 되는 관계만을 유지하는 것이 중요합니다.');
+-- ✅ Create 'aiResponse' table
+DROP TABLE IF EXISTS `AIResponses`;
+CREATE TABLE `AIResponses` (
+  `aiMessage` INT NOT NULL PRIMARY KEY,
+  `text` TEXT NOT NULL,
+  `feeling` TEXT,
+  `affinity_score` INT,
+  `rejection_score` JSON,
+  `rejection_content` JSON,
+  `userMessage` TEXT,
+  `final_rejection_score` INT,
+  `final_affinity_score` INT,
+  `conversation_id` INT,
+  FOREIGN KEY (`aiMessage`) REFERENCES `message`(`messageId`),
+  FOREIGN KEY (`conversation_id`) REFERENCES `conversation`(`conversationId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO character_data (character_id, ai_name, description, difficulty_level) VALUES
-(1,'미연','미연은 매우 감성적인 타입이에요.\n부탁이 거절되면 실망하거나 슬퍼할 수 있어요. 미연은 내성적이지만 친구들에게는 따뜻하고 배려심이 많아 깊은 관계를 맺고 있으며, 친구들의 고민을 잘 들어줘요. 미연의 부탁을 공감하고 이해하며 부드럽게 거절하는 것이 중요해요.',1),(2,'세진','세진은 논리적이고 책임감이 강해 사람들과 쉽게 친해집니다. 하지만 세진은 매우 계산적이고 타산적인 성격을 가지고 있습니다. 어떤 일을 할 때 항상 이득과 손해를 따지며, 자신이 과거에 도와줬던 일에 대해서는 반드시 상대방이 갚아야 한다고 생각합니다. 세진은 이성적이고 차분하게 문제를 해결하려고 노력하며, 감정에 휘둘리지 않습니다. 이러한 성격 때문에 때로는 차갑게 보일 수 있지만, 그만큼 세진은 믿을 수 있는 사람입니다. 주변 사람들은 세진의 실용적이고 합리적인 면모를 존중하지만, 때로는 거리감을 느끼기도 합니다. 세진은 자신의 원칙을 굽히지 않으며, 필요할 때는 단호하게 대처합니다.',2),(3,'현아','현아는 포기하지 않고 끈기 있게 부탁을 반복하며, 솔직한 감정 표현으로 상대방의 동정을 얻으려 해요. 꾸준한 노력과 집요함으로 목표를 달성하지만, 때때로 그 성격이 상대방에게 부담이 될 수 있답니다.',3),(4,'진혁','진혁은 감정을 격하게 표현하는 성격으로, 분노 조절에 어려움을 겪습니다. 그는 매우 단순한 사고 방식을 가지고 있으며, 복잡한 상황이나 논리적 사고를 피합니다. 이러한 단순함은 그의 의사소통 방식에서도 드러나며, 주로 무례하거나 공격적인 부탁을 하는 경향이 있습니다.',4);
+-- ✅ Insert initial data
+INSERT INTO mindset (mindsetId, mindsetText) VALUES
+(1,'Trying to please everyone will make you lose yourself. It is important to prioritize yourself. This is necessary to protect our mental and emotional health.'),
+(2,'If you are afraid of speaking in front of people, remember that everyone feels nervous at first. Confidence can be built through repeated practice and small successes.'),
+(3,'To build confidence, it is important to find your strengths and develop them. This enhances self-efficacy and helps you become a better version of yourself.'),
+(4,'Mistakes are part of the growth process. You can learn and improve through mistakes. Accepting this can help you build better relationships.'),
+(5,'Taking care of yourself is very important. A healthy mind and body are necessary for maintaining healthy relationships with others.'),
+(6,'Positive self-talk boosts confidence and helps maintain a positive attitude even in difficult situations. This also has a positive impact on interpersonal relationships.'),
+(7,'Expressing your thoughts and emotions is very important. Do not be afraid of others’ reactions, and be honest in expressing yourself. This helps to reveal your true self and deepen relationships.'),
+(8,'The opinions and evaluations of others do not determine your worth. It is important to recognize your own value and self-esteem. This helps maintain a healthy self-image.'),
+(9,'Holding on to the past and staying in an unhappy relationship does not help. It is important to acknowledge the past and make decisions that are necessary for the present and future.'),
+(10,'If I am comfortable, others will also feel comfortable. It is important to acknowledge yourself by saying "It’s okay."'),
+(11,'When you maintain a relaxed mind, that energy is conveyed to others. This helps form natural and comfortable relationships.'),
+(12,'The thoughts and opinions of others are their concerns, and they are beyond my control. It is more important to focus on my own emotions and thoughts. This helps protect my mental health.'),
+(13,'The judgments of others are temporary and can change. Do not dwell too much on them and follow your own path. This helps in continuous self-development and the pursuit of happiness.'),
+(14,'Trying to impress everyone will only exhaust you. It is more important to focus on relationships that matter to you. This helps use your energy efficiently.'),
+(15,'I am the master of my own life. It is important to make my own decisions without being swayed by others’ opinions. This leads to true freedom and self-respect.'),
+(16,'We have the right to choose how we spend our time and energy. Saying no is a legitimate choice to protect our needs and priorities. This allows us to lead our lives more proactively.'),
+(17,'In conflict situations, it is important to seek solutions together rather than blaming the other person. This helps resolve issues more efficiently and strengthens relationships.'),
+(18,'Saying "yes" to every request ignores my own will and needs. It is important to know my limits and say no appropriately. This protects my self-esteem and helps maintain healthy relationships.'),
+(19,'Saying no properly does not ruin relationships. On the contrary, honest conversations can deepen relationships. Respecting each other’s boundaries is important.'),
+(20,'Being able to say no is a sign of confidence. Knowing and expressing your limits is true courage. This helps clearly communicate your boundaries to others.'),
+(21,'Saying no can become more natural through practice. If you start with small things, you can gradually say no to bigger things naturally. This strengthens decision-making skills.'),
+(22,'Do not feel guilty when saying no for a legitimate reason. Protecting your boundaries is natural. Excessive guilt only makes you suffer. Saying no is a way of respecting yourself.'),
+(23,'When refusing a request, offering an alternative can help the other person accept it more easily. This makes them feel respected and helps maintain positive relationships.'),
+(24,'Prioritizing your emotions and needs is important for building healthy self-esteem. Sacrificing yourself to meet others’ expectations is not sustainable in the long run.'),
+(25,'Most people can understand rejection. Do not worry too much and speak honestly. This reduces misunderstandings and helps maintain positive relationships.'),
+(26,'Saying no is a way to clarify your standards and boundaries. It is necessary to protect your values and principles. This helps communicate your boundaries to others.'),
+(27,'Trying to understand each other’s perspectives in friendships reduces conflicts and fosters deeper bonds. This enhances empathy and respect for each other’s feelings.'),
+(28,'Expressing emotions honestly helps others better understand your situation and feelings. This reduces misunderstandings, builds trust, and enables healthy communication.'),
+(29,'Respecting different perspectives broadens your worldview. This helps understand differences, reduces conflicts, and leads to richer conversations.'),
+(30,'Positive feedback boosts others’ self-esteem and encourages better behavior. This is important for maintaining healthy relationships and supporting mutual growth.'),
+(31,'Forced kindness burdens both you and the other person. True kindness comes naturally, making relationships more comfortable and positive.'),
+(32,'Calculated kindness often involves hidden intentions and is not genuine. It can damage trust. Kindness should come from a pure heart.'),
+(33,'Recognizing that people have different thoughts and feelings helps you understand them better. This reduces unnecessary conflicts and enhances respect for their emotions.'),
+(34,'Jumping to conclusions without fully understanding the other person’s situation can lead to incorrect judgments. Making an effort to understand them helps maintain healthy relationships.'),
+(35,'Advice can sometimes be perceived as an attempt to change the other person, whereas empathy focuses on understanding and respecting their emotions. This builds deeper understanding and trust.'),
+(36,'Relationships without mutual respect are harmful. It is important to maintain relationships based on respect and understanding.');
+
+INSERT INTO aicharacter (characterId, aiName, description, difficultyLevel) VALUES
+(1,'Miyeon','Miyeon is a very emotional type. She may feel disappointed or sad when her requests are denied. She is introverted but warm and considerate towards her friends, forming deep relationships and listening attentively to their concerns. It is important to empathize with and gently refuse Miyeon\'s requests.',1),
+(2,'Sejin','Sejin is logical and responsible, making it easy for him to get along with people. However, he has a very calculative and pragmatic personality. He always weighs the pros and cons before doing anything and believes that those he has helped in the past must return the favor. Sejin tries to solve problems rationally and calmly, avoiding emotional influences. Because of this, he may sometimes appear cold, but he is a reliable person. People respect his practicality and rationality but sometimes feel distant from him. Sejin does not compromise on his principles and responds decisively when necessary.',2),
+(3,'Hyuna','Hyuna persistently repeats her requests and tries to gain sympathy through honest emotional expressions. She achieves her goals through perseverance and persistence, but her personality can sometimes feel burdensome to others.',3),
+(4,'Jinhyuk','Jinhyuk expresses emotions intensely and struggles with anger management. He has a very simple way of thinking and avoids complex situations or logical reasoning. This simplicity is reflected in his communication style, as he tends to make rude or aggressive requests.',4);
 
 
 SET FOREIGN_KEY_CHECKS=1;
